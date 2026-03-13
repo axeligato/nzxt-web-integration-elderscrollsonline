@@ -1,18 +1,214 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <link rel="stylesheet" href="./public/css/styles.css"/ >
-  </head>
-  <body>
-    <div class="container">
-      <img id="background" src="./public/image/background.png" />
-      <div class="data">
-        <h1 id="source">gpu</h1>
-        <p>
-          <span id="temperature">30</span>°C
-        </p>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elder Scrolls — Kraken Integration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & base ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:      #e8dfc8;
+      --cream-dim:  rgba(232,223,200,0.82);
+      --gold:       #c9a84c;
+      --gold-dim:   rgba(201,168,76,0.35);
+      --bg:         #000;
+      --text-stroke: 2px #2a2a2a;
+      --size:        480px;
+    }
+
+    html, body {
+      width:  var(--size);
+      height: var(--size);
+      overflow: hidden;
+      background: var(--bg);
+      font-family: 'Uncial Antiqua', serif;
+    }
+
+    /* ── Ouroboros (background, rotating) ───────────────── */
+    #ouroboros {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* slow clockwise rotation */
+      animation: spin 60s linear infinite;
+    }
+
+    #ouroboros img {
+      width:  460px;
+      height: 460px;
+      object-fit: contain;
+      /* slight dim so text pops */
+      opacity: 0.72;
+      filter: drop-shadow(0 0 18px rgba(201,168,76,0.4));
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* ── Central stats container ─────────────────────────── */
+    #stats {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      /* stays perfectly still while ring rotates */
+    }
+
+    /* ── Individual stat block ───────────────────────────── */
+    .stat {
+      text-align: center;
+      line-height: 1.15;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+      -webkit-text-stroke: 1px #1e1e1e;
+      text-stroke: 1px #1e1e1e;
+    }
+
+    .stat-value {
+      font-size: 42px;
+      color: var(--cream);
+      -webkit-text-stroke: var(--text-stroke);
+      text-stroke: var(--text-stroke);
+      /* soft gold glow to lift from dark bg */
+      text-shadow:
+        0 0 12px rgba(201,168,76,0.55),
+        0 2px 4px rgba(0,0,0,0.9);
+    }
+
+    .stat-unit {
+      font-size: 16px;
+      color: var(--gold);
+      -webkit-text-stroke: 1px #1a1a1a;
+      text-stroke: 1px #1a1a1a;
+      margin-left: 2px;
+    }
+
+    /* ── Divider rune line ───────────────────────────────── */
+    .divider {
+      width: 100px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 2px auto;
+      opacity: 0.6;
+    }
+
+    /* ── Subtle vignette to focus the eye ───────────────── */
+    #vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at center,
+        transparent 28%,
+        rgba(0,0,0,0.55) 72%,
+        rgba(0,0,0,0.85) 100%
+      );
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Rotating Ouroboros ring -->
+  <div id="ouroboros">
+    <img
+      src="./public/ouroboros.png"
+      alt="Ouroboros"
+      id="ouroboros-img"
+    />
+  </div>
+
+  <!-- Vignette overlay -->
+  <div id="vignette"></div>
+
+  <!-- Stats (centred, stationary) -->
+  <div id="stats">
+
+    <div class="stat">
+      <div class="stat-label">CPU Temp</div>
+      <div class="stat-value">
+        <span id="cpu-temp">--</span><span class="stat-unit">°C</span>
       </div>
     </div>
-    <script type="text/javascript" src="./public/js/main.js"></script>
-  </body>
+
+    <div class="divider"></div>
+
+    <div class="stat">
+      <div class="stat-label">GPU Temp</div>
+      <div class="stat-value">
+        <span id="gpu-temp">--</span><span class="stat-unit">°C</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="stat">
+      <div class="stat-label">RAM</div>
+      <div class="stat-value">
+        <span id="ram-used">--</span><span class="stat-unit">%</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── Helpers ────────────────────────────────────────────
+    const $cpu  = document.getElementById('cpu-temp');
+    const $gpu  = document.getElementById('gpu-temp');
+    const $ram  = document.getElementById('ram-used');
+
+    function set(el, val, fallback = '--') {
+      el.textContent = val != null ? Math.round(val) : fallback;
+    }
+
+    // ── NZXT CAM data callback ──────────────────────────────
+    window.nzxt = {
+      v1: {
+        onMonitoringDataUpdate(data) {
+          const { cpus, gpus, ram } = data;
+
+          // CPU — first core average temperature
+          const cpuTemp = cpus?.[0]?.temperature ?? null;
+          set($cpu, cpuTemp);
+
+          // GPU — first GPU temperature
+          const gpuTemp = gpus?.[0]?.temperature ?? null;
+          set($gpu, gpuTemp);
+
+          // RAM — used percentage
+          const ramPct = ram?.load ?? null;
+          set($ram, ramPct);
+        }
+      }
+    };
+
+    // ── Preview / dev mode: fake data when not in CAM ──────
+    const isKraken = new URLSearchParams(location.search).get('kraken') === '1';
+    if (!isKraken) {
+      let t = 0;
+      setInterval(() => {
+        t += 0.04;
+        set($cpu, 45 + Math.sin(t)       * 18);
+        set($gpu, 62 + Math.sin(t * 0.7) * 15);
+        set($ram, 58 + Math.sin(t * 0.4) * 12);
+      }, 1000);
+    }
+  </script>
+</body>
 </html>
