@@ -36,15 +36,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      /* clip to circle so rotating corners never show */
+      border-radius: 50%;
+      overflow: hidden;
     }
 
     #ouroboros img {
       width:  640px;
       height: 640px;
       object-fit: contain;
-      opacity: 0.72;
-      filter: drop-shadow(0 0 18px rgba(201,168,76,0.4));
-      /* rotate the image itself, not the wrapper, so nothing clips */
+      opacity: 0.85;
       animation: spin 60s linear infinite;
       transform-origin: center center;
     }
@@ -62,41 +63,39 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      /* stays perfectly still while ring rotates */
+      gap: 4px;
     }
 
     /* ── Individual stat block ───────────────────────────── */
     .stat {
       text-align: center;
-      line-height: 1.15;
+      line-height: 1.1;
     }
 
     .stat-label {
-      font-size: 13px;
-      letter-spacing: 0.22em;
+      font-size: 28px;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--cream-dim);
-      -webkit-text-stroke: 1px #1e1e1e;
-      text-stroke: 1px #1e1e1e;
-    }
-
-    .stat-value {
-      font-size: 42px;
       color: var(--cream);
       -webkit-text-stroke: var(--text-stroke);
       text-stroke: var(--text-stroke);
-      /* soft gold glow to lift from dark bg */
+    }
+
+    .stat-value {
+      font-size: 120px;
+      color: var(--cream);
+      -webkit-text-stroke: var(--text-stroke);
+      text-stroke: var(--text-stroke);
       text-shadow:
-        0 0 12px rgba(201,168,76,0.55),
-        0 2px 4px rgba(0,0,0,0.9);
+        0 0 20px rgba(201,168,76,0.4),
+        0 2px 6px rgba(0,0,0,0.95);
     }
 
     .stat-unit {
-      font-size: 16px;
-      color: var(--gold);
-      -webkit-text-stroke: 1px #1a1a1a;
-      text-stroke: 1px #1a1a1a;
+      font-size: 80px;
+      color: var(--cream);
+      -webkit-text-stroke: var(--text-stroke);
+      text-stroke: var(--text-stroke);
       margin-left: 2px;
     }
 
