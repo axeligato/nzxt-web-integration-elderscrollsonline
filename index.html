@@ -9,143 +9,74 @@
   <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap" rel="stylesheet" />
   <style>
     /* ── Reset & base ─────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    :root {
-      --cream:      #e8dfc8;
-      --cream-dim:  rgba(232,223,200,0.82);
-      --gold:       #c9a84c;
-      --gold-dim:   rgba(201,168,76,0.35);
-      --bg:         #000;
-      --text-stroke: 2px #2a2a2a;
-      --size:        640px;
-    }
-
-    html, body {
-      width:  var(--size);
-      height: var(--size);
-      overflow: hidden;
-      background: var(--bg);
-      font-family: 'Uncial Antiqua', serif;
-    }
-
-    /* ── Ouroboros (background, rotating) ───────────────── */
-    #ouroboros {
-      position: absolute;
-      inset: 0;
+    body {
+      background-color: black;
       display: flex;
       align-items: center;
       justify-content: center;
-      /* clip to circle so rotating corners never show */
-      border-radius: 50%;
-      overflow: hidden;
+      font-family: 'Uncial Antiqua', serif;
     }
 
-    #ouroboros img {
-      width:  640px;
-      height: 640px;
-      object-fit: contain;
-      opacity: 0.85;
+    /* ── Container ───────────────────────────────────────── */
+    .container {
+      position: relative;
+      border-radius: 50%;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── Ouroboros image (rotating) ──────────────────────── */
+    #ouroboros {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
       animation: spin 60s linear infinite;
-      transform-origin: center center;
     }
 
     @keyframes spin {
       from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
+      to   { transform: rotate(-360deg); }
     }
 
-    /* ── Central stats container ─────────────────────────── */
-    #stats {
+    /* ── Stats overlay ───────────────────────────────────── */
+    .data {
       position: absolute;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
     }
 
-    /* ── Individual stat block ───────────────────────────── */
-    .stat {
-      text-align: center;
-      line-height: 1.1;
-    }
-
-    .stat-label {
-      font-size: 28px;
-      letter-spacing: 0.18em;
+    .data h1 {
+      font-size: 5vw;
       text-transform: uppercase;
-      color: var(--cream);
-      -webkit-text-stroke: var(--text-stroke);
-      text-stroke: var(--text-stroke);
+      color: #e8dfc8;
+      -webkit-text-stroke: 2px #2a2a2a;
     }
 
-    .stat-value {
-      font-size: 120px;
-      color: var(--cream);
-      -webkit-text-stroke: var(--text-stroke);
-      text-stroke: var(--text-stroke);
-      text-shadow:
-        0 0 20px rgba(201,168,76,0.4),
-        0 2px 6px rgba(0,0,0,0.95);
-    }
-
-    .stat-unit {
-      font-size: 80px;
-      color: var(--cream);
-      -webkit-text-stroke: var(--text-stroke);
-      text-stroke: var(--text-stroke);
-      margin-left: 2px;
-    }
-
-    /* ── Divider rune line ───────────────────────────────── */
-    .divider {
-      width: 100px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      margin: 2px auto;
-      opacity: 0.6;
-    }
-
-    /* ── Subtle vignette to focus the eye ───────────────── */
-    #vignette {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(
-        circle at center,
-        transparent 28%,
-        rgba(0,0,0,0.55) 72%,
-        rgba(0,0,0,0.85) 100%
-      );
-      pointer-events: none;
+    .data p {
+      margin: 0;
+      font-size: 18.75vw;
+      color: #e8dfc8;
+      -webkit-text-stroke: 2px #2a2a2a;
+      line-height: 1;
     }
   </style>
 </head>
 <body>
 
-  <!-- Rotating Ouroboros ring -->
-  <div id="ouroboros">
-    <img
-      src="./public/ouroboros.png"
-      alt="Ouroboros"
-      id="ouroboros-img"
-    />
-  </div>
-
-  <!-- Vignette overlay -->
-  <div id="vignette"></div>
-
-  <!-- Stats (centred, stationary) -->
-  <div id="stats">
-
-    <div class="stat">
-      <div class="stat-label">GPU</div>
-      <div class="stat-value">
-        <span id="gpu-temp">--</span><span class="stat-unit">°C</span>
-      </div>
+  <div class="container">
+    <img id="ouroboros" src="./public/ouroboros.png" alt="Ouroboros" />
+    <div class="data">
+      <h1>GPU</h1>
+      <p><span id="gpu-temp">--</span>°C</p>
     </div>
-
   </div>
 
   <script>
