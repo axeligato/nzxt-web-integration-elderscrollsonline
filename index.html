@@ -36,17 +36,17 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      /* slow clockwise rotation */
-      animation: spin 60s linear infinite;
     }
 
     #ouroboros img {
-      width:  620px;
-      height: 620px;
+      width:  640px;
+      height: 640px;
       object-fit: contain;
-      /* slight dim so text pops */
       opacity: 0.72;
       filter: drop-shadow(0 0 18px rgba(201,168,76,0.4));
+      /* rotate the image itself, not the wrapper, so nothing clips */
+      animation: spin 60s linear infinite;
+      transform-origin: center center;
     }
 
     @keyframes spin {
