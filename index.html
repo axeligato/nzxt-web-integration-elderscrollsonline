@@ -74,37 +74,28 @@
   <div class="container">
     <img id="ouroboros" src="./public/ouroboros.png" alt="Ouroboros" />
     <div class="data">
-      <h1>GPU</h1>
+      <h1 id="source">GPU</h1>
       <p><span id="gpu-temp">--</span>°C</p>
     </div>
   </div>
 
   <script>
-    // ── Helpers ────────────────────────────────────────────
-    const $gpu = document.getElementById('gpu-temp');
+    const params = (new URL(window.location.href)).searchParams
+    const source = params.get('source') || 'gpu'
+    document.getElementById('source').innerText = source.toUpperCase()
 
-    function set(el, val, fallback = '--') {
-      el.textContent = val != null ? Math.round(val) : fallback;
+    function updateTemperature(temperature) {
+      document.getElementById('gpu-temp').innerText = Math.round(temperature)
     }
 
-    // ── NZXT CAM data callback ──────────────────────────────
+    // https://github.com/NZXTCorp/web-integrations-types/blob/main/v1/index.d.ts
     window.nzxt = {
       v1: {
-        onMonitoringDataUpdate(data) {
-          const gpuTemp = data.gpus?.[0]?.temperature ?? null;
-          set($gpu, gpuTemp);
+        onMonitoringDataUpdate: (data) => {
+          const { cpus, gpus } = data
+          updateTemperature((source === 'cpu' ? cpus : gpus)[0].temperature)
         }
       }
-    };
-
-    // ── Preview / dev mode: fake data when not in CAM ──────
-    const isKraken = new URLSearchParams(location.search).get('kraken') === '1';
-    if (!isKraken) {
-      let t = 0;
-      setInterval(() => {
-        t += 0.04;
-        set($gpu, 62 + Math.sin(t * 0.7) * 15);
-      }, 1000);
     }
   </script>
 </body>
